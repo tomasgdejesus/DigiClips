@@ -2,6 +2,20 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.2.
 
+## Instructions to run Angular + Backend Email Service
+
+In ``./server/`` directory, run:
+```bash
+npm run dev
+```
+
+In this ``./`` directory, run:
+```bash
+ng serve --proxy-config .\proxy.conf.json
+```
+
+Then access front-end app through `http://localhost:4200/`. Current nodemailer implements nodemailer test account.
+
 ## Development server
 
 To start a local development server, run:

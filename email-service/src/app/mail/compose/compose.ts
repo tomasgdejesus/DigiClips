@@ -9,6 +9,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
+import { HttpClient } from '@angular/common/http';
 
 interface Email {
   id: number;
@@ -53,7 +54,8 @@ export class ComposeComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private http: HttpClient
   ) {
     this.currentUser.set(this.authService.getCurrentUser() || 'User');
   }
@@ -94,6 +96,11 @@ export class ComposeComponent implements OnInit {
       return;
     }
 
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.compose.to)) {
+        console.warn('Invalid email format for "To" field');
+        return;
+    }
+
     const payload = {
       to: this.compose.to,
       cc: this.compose.cc,
@@ -103,8 +110,19 @@ export class ComposeComponent implements OnInit {
       attachments: this.selectedFiles.map(f => ({ name: f.name, size: f.size }))
     };
 
-    // TODO: replace this 
-    console.log('Sending email payload:', payload, 'files:', this.selectedFiles);
+    this.http.post<any>('/api/send-email', payload).subscribe({
+        next: res => {
+        console.log('Email sent:', res);
+        if (res?.previewUrl) {
+            window.open(res.previewUrl, '_blank'); // Ethereal preview
+        }
+        this.closeCompose();
+        },
+        error: err => {
+            console.error('Failed to send email', err);
+            alert('Failed to send email');
+        }
+  });
 
     // After send, navigate back (or clear form). Here we go back to previous page.
     this.closeCompose();
